@@ -43,9 +43,9 @@ for (i in 2:length(para_list)){
   v_para <- para_list[i]
   for (k in 1:length(pn_list)){
     v_pn <- pn_list[k]
-  pn_temp %>% filter(year == v_para & Inflow_spill == '유입' & Point_check ==  v_pn) %>% ggplot(aes(x = value, y = Point_No, fill = Point_No)) +
-    geom_col() + ggtitle(v_para) +
-    ggsave(file = paste0("C:/Big Data Contest/I_PN_for/ipn_", v_pn, v_para, ".jpg"))
+    pn_temp %>% filter(year == v_para & Inflow_spill == '유입' & Point_check ==  v_pn) %>% ggplot(aes(x = value, y = Point_No, fill = Point_No)) +
+      geom_col() + ggtitle(v_para) +
+      ggsave(file = paste0("C:/Big Data Contest/I_PN_for/ipn_", v_pn, v_para, ".jpg"))
   }
 }
 
@@ -54,7 +54,7 @@ for (i in 2:length(para_list)){
   v_para <- para_list[i]
   for (k in 1:length(pn_list)){
     v_pn <- pn_list[k]
-  pn_temp %>% filter(year == v_para & Inflow_spill == '유출' & Point_check ==  v_pn) %>% ggplot(aes(x = value, y = Point_No, fill = Point_No)) +
+    pn_temp %>% filter(year == v_para & Inflow_spill == '유출' & Point_check ==  v_pn) %>% ggplot(aes(x = value, y = Point_No, fill = Point_No)) +
       geom_col() + ggtitle(v_para) +
       ggsave(file = paste0("C:/Big Data Contest/S_PN_for/spn_", v_pn, v_para, ".jpg"))
   }
