@@ -94,6 +94,18 @@ qnp <- qnp %>% group_by() %>% mutate(seq = row_number())
 
 # write.csv(qnp, 'c:/Big Data Contest/년도_지점_유입출_sum_n_통합데이터.csv')
 
+qwe <- qnp %>% mutate(Point_check = str_extract(Point_No, '[A-Z]{1,1}'))
+
+# num <- 'F'
+# Inflow <- qwe %>% filter(Year >= 2018 & Point_check == num  & Inflow_Spill == '유입') %>% group_by(Point_No) %>% mutate(ratio = allsum/alln) %>%
+#   mutate(lag_ratio = lag(ratio, 3)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% 
+#   spread(key=Year, value=per_val)
+# 
+# Spill <- qwe %>% filter(Year >= 2018 & Point_check == num  & Inflow_Spill == '유출') %>% group_by(Point_No) %>% mutate(ratio = allsum/alln) %>%
+#   mutate(lag_ratio = lag(ratio, 3)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% 
+#   spread(key=Year, value=per_val)
+
+
 #ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ유입ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 I_PN_B1 <- qnp %>% filter(Point_No == 'B-01' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
 I_PN_B2 <- qnp %>% filter(Point_No == 'B-02' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
