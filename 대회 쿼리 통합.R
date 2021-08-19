@@ -151,6 +151,7 @@ rm(list=ls())
 
 Seoul_traffic <- read_excel('c:/Big Data Contest/Seoul_traffic_R_final.xlsx')
 
+#2016년 1월 1일 이후 사용할 데이터만 가져오기
 Seoul_traffic <- Seoul_traffic %>% filter(DATE >= '2016-01-01')
 
 Seoul_traffic <- Seoul_traffic %>% mutate(a_check = str_detect(Point_No, 'A', FALSE)) %>% filter(a_check != TRUE)
@@ -159,9 +160,10 @@ Seoul_traffic <- Seoul_traffic %>% mutate(code = row_number())
 
 Seoul_traffic <- Seoul_traffic %>% select(-Time_0, -Time_1, -Time_2, -Time_3, -Time_4, -Time_5, -Time_23, -Direction)
 
+#na값을 0으로 변환
 Seoul_traffic[is.na(Seoul_traffic)] <- 0
 
-
+#모든 시간대에 값이 없는 row들을 제거하기 위해 필터링하기
 Seoul_traffic <- Seoul_traffic %>% mutate(delete_TF = if_else(Time_6 == 0 &
                                                                 Time_7 == 0 &
                                                                 Time_8 == 0 &
@@ -189,7 +191,7 @@ Seoul_traffic <- Seoul_traffic %>% select(-a_check, -delete_TF, -code)
 # 저장된 Seoul_traffic_R_final 데이터를 엑셀로 일부 수정했기에 새로 불러오기
 Seoul_traffic <- read.csv('c:/Big Data Contest/Seoul_traffic_08_11.csv')
 
-# 시간대별로 
+# 시간대별로 각 row의 0의 유무 체크하기(위에서 na를 0으로 변환했기에 여기서 0값은 na값)
 Seoul_traffic <- Seoul_traffic %>% mutate(T6 = if_else(Time_6 == 0, TRUE, FALSE)) %>% 
   mutate(T7 = if_else(Time_7 == 0, TRUE, FALSE)) %>%
   mutate(T8 = if_else(Time_8 == 0, TRUE, FALSE)) %>%
@@ -214,7 +216,7 @@ ist6 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, 
 sst6 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_6, T6) %>% filter(Inflow_Spill == '유출') %>% arrange(Point_No, Day)
 
 
-# 해당 컬럼의 값이 0인지 T/F로 체크 -> n칸 끌어내려서 데이터값 입력 -> 이후 한칸 끌어내린 데이터의 값이 0이면 한칸 끌어내린 값을 입력, 그렇지 않으면 기존 값을 입력 -> 이후 다시 0값이 완전히 없어질때까지 반복
+# 해당 컬럼의 값이 0인지 T/F로 체크 -> 값이 없는 칸을 채워주기 위해 n칸 끌어내려서 데이터값 입력 -> 이후 n칸 끌어내린 데이터의 값이 0이면 n+1칸 끌어내린 값을 입력, 그렇지 않으면 기존 값을 입력 -> 이후 다시 0값이 완전히 없어질때까지 반복(결측값에 데이터를 넣어주기 위함// 단, Point_No별로 요일별 값을 넣어주기)
 ist6 <- ist6 %>% mutate(T6_lag1 = lag(Time_6, 1)) %>%
   mutate(NT6_1 = if_else(T6 == TRUE, print(T6_lag1), print(Time_6))) %>%
   mutate(check_NT6_1 = if_else(NT6_1 == 0, TRUE, FALSE)) %>% 
@@ -299,8 +301,6 @@ sst6 <- sst6 %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, NT6_16)
 ist7 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_7, T7) %>% filter(Inflow_Spill == '유입') %>% arrange(Point_No, Day)
 sst7 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_7, T7) %>% filter(Inflow_Spill == '유출') %>% arrange(Point_No, Day)
 
-
-# 해당 컬럼의 값이 0인지 T/F로 체크 -> n칸 끌어내려서 데이터값 입력 -> 이후 한칸 끌어내린 데이터의 값이 0이면 한칸 끌어내린 값을 입력, 그렇지 않으면 기존 값을 입력 -> 이후 다시 0값이 완전히 없어질때까지 반복
 ist7 <- ist7 %>% mutate(T7_lag1 = lag(Time_7, 1)) %>%
   mutate(NT7_1 = if_else(T7 == TRUE, print(T7_lag1), print(Time_7))) %>%
   mutate(check_NT7_1 = if_else(NT7_1 == 0, TRUE, FALSE)) %>% 
@@ -370,8 +370,6 @@ sst7 <- sst7 %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, NT7_9)
 ist8 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_8, T8) %>% filter(Inflow_Spill == '유입') %>% arrange(Point_No, Day)
 sst8 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_8, T8) %>% filter(Inflow_Spill == '유출') %>% arrange(Point_No, Day)
 
-
-# 해당 컬럼의 값이 0인지 T/F로 체크 -> n칸 끌어내려서 데이터값 입력 -> 이후 한칸 끌어내린 데이터의 값이 0이면 한칸 끌어내린 값을 입력, 그렇지 않으면 기존 값을 입력 -> 이후 다시 0값이 완전히 없어질때까지 반복
 ist8 <- ist8 %>% mutate(T8_lag1 = lag(Time_8, 1)) %>%
   mutate(NT8_1 = if_else(T8 == TRUE, print(T8_lag1), print(Time_8))) %>%
   mutate(check_NT8_1 = if_else(NT8_1 == 0, TRUE, FALSE)) %>% 
@@ -439,8 +437,6 @@ sst8 <- sst8 %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, NT8_7)
 ist9 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_9, T9) %>% filter(Inflow_Spill == '유입') %>% arrange(Point_No, Day)
 sst9 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_9, T9) %>% filter(Inflow_Spill == '유출') %>% arrange(Point_No, Day)
 
-
-# 해당 컬럼의 값이 0인지 T/F로 체크 -> n칸 끌어내려서 데이터값 입력 -> 이후 한칸 끌어내린 데이터의 값이 0이면 한칸 끌어내린 값을 입력, 그렇지 않으면 기존 값을 입력 -> 이후 다시 0값이 완전히 없어질때까지 반복
 ist9 <- ist9 %>% mutate(T9_lag1 = lag(Time_9, 1)) %>%
   mutate(NT9_1 = if_else(T9 == TRUE, print(T9_lag1), print(Time_9))) %>%
   mutate(check_NT9_1 = if_else(NT9_1 == 0, TRUE, FALSE)) %>% 
@@ -517,8 +513,6 @@ sst9 <- sst9 %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, NT9_11)
 ist10 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_10, T10) %>% filter(Inflow_Spill == '유입') %>% arrange(Point_No, Day)
 sst10 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_10, T10) %>% filter(Inflow_Spill == '유출') %>% arrange(Point_No, Day)
 
-
-# 해당 컬럼의 값이 0인지 T/F로 체크 -> n칸 끌어내려서 데이터값 입력 -> 이후 한칸 끌어내린 데이터의 값이 0이면 한칸 끌어내린 값을 입력, 그렇지 않으면 기존 값을 입력 -> 이후 다시 0값이 완전히 없어질때까지 반복
 ist10 <- ist10 %>% mutate(T10_lag1 = lag(Time_10, 1)) %>%
   mutate(NT10_1 = if_else(T10 == TRUE, print(T10_lag1), print(Time_10))) %>%
   mutate(check_NT10_1 = if_else(NT10_1 == 0, TRUE, FALSE)) %>% 
@@ -595,8 +589,6 @@ sst10 <- sst10 %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, NT10_11
 ist11 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_11, T11) %>% filter(Inflow_Spill == '유입') %>% arrange(Point_No, Day)
 sst11 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_11, T11) %>% filter(Inflow_Spill == '유출') %>% arrange(Point_No, Day)
 
-
-# 해당 컬럼의 값이 0인지 T/F로 체크 -> n칸 끌어내려서 데이터값 입력 -> 이후 한칸 끌어내린 데이터의 값이 0이면 한칸 끌어내린 값을 입력, 그렇지 않으면 기존 값을 입력 -> 이후 다시 0값이 완전히 없어질때까지 반복
 ist11 <- ist11 %>% mutate(T11_lag1 = lag(Time_11, 1)) %>%
   mutate(NT11_1 = if_else(T11 == TRUE, print(T11_lag1), print(Time_11))) %>%
   mutate(check_NT11_1 = if_else(NT11_1 == 0, TRUE, FALSE)) %>% 
@@ -673,8 +665,6 @@ sst11 <- sst11 %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, NT11_11
 ist12 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_12, T12) %>% filter(Inflow_Spill == '유입') %>% arrange(Point_No, Day)
 sst12 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_12, T12) %>% filter(Inflow_Spill == '유출') %>% arrange(Point_No, Day)
 
-
-# 해당 컬럼의 값이 0인지 T/F로 체크 -> n칸 끌어내려서 데이터값 입력 -> 이후 한칸 끌어내린 데이터의 값이 0이면 한칸 끌어내린 값을 입력, 그렇지 않으면 기존 값을 입력 -> 이후 다시 0값이 완전히 없어질때까지 반복
 ist12 <- ist12 %>% mutate(T12_lag1 = lag(Time_12, 1)) %>%
   mutate(NT12_1 = if_else(T12 == TRUE, print(T12_lag1), print(Time_12))) %>%
   mutate(check_NT12_1 = if_else(NT12_1 == 0, TRUE, FALSE)) %>% 
@@ -754,8 +744,6 @@ sst12 <- sst12 %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, NT12_11
 ist13 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_13, T13) %>% filter(Inflow_Spill == '유입') %>% arrange(Point_No, Day)
 sst13 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_13, T13) %>% filter(Inflow_Spill == '유출') %>% arrange(Point_No, Day)
 
-
-# 해당 컬럼의 값이 0인지 T/F로 체크 -> n칸 끌어내려서 데이터값 입력 -> 이후 한칸 끌어내린 데이터의 값이 0이면 한칸 끌어내린 값을 입력, 그렇지 않으면 기존 값을 입력 -> 이후 다시 0값이 완전히 없어질때까지 반복
 ist13 <- ist13 %>% mutate(T13_lag1 = lag(Time_13, 1)) %>%
   mutate(NT13_1 = if_else(T13 == TRUE, print(T13_lag1), print(Time_13))) %>%
   mutate(check_NT13_1 = if_else(NT13_1 == 0, TRUE, FALSE)) %>% 
@@ -829,8 +817,6 @@ sst13 <- sst13 %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, NT13_10
 ist14 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_14, T14) %>% filter(Inflow_Spill == '유입') %>% arrange(Point_No, Day)
 sst14 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_14, T14) %>% filter(Inflow_Spill == '유출') %>% arrange(Point_No, Day)
 
-
-# 해당 컬럼의 값이 0인지 T/F로 체크 -> n칸 끌어내려서 데이터값 입력 -> 이후 한칸 끌어내린 데이터의 값이 0이면 한칸 끌어내린 값을 입력, 그렇지 않으면 기존 값을 입력 -> 이후 다시 0값이 완전히 없어질때까지 반복
 ist14 <- ist14 %>% mutate(T14_lag1 = lag(Time_14, 1)) %>%
   mutate(NT14_1 = if_else(T14 == TRUE, print(T14_lag1), print(Time_14))) %>%
   mutate(check_NT14_1 = if_else(NT14_1 == 0, TRUE, FALSE)) %>% 
@@ -904,8 +890,6 @@ sst14 <- sst14 %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, NT14_10
 ist15 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_15, T15) %>% filter(Inflow_Spill == '유입') %>% arrange(Point_No, Day)
 sst15 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_15, T15) %>% filter(Inflow_Spill == '유출') %>% arrange(Point_No, Day)
 
-
-# 해당 컬럼의 값이 0인지 T/F로 체크 -> n칸 끌어내려서 데이터값 입력 -> 이후 한칸 끌어내린 데이터의 값이 0이면 한칸 끌어내린 값을 입력, 그렇지 않으면 기존 값을 입력 -> 이후 다시 0값이 완전히 없어질때까지 반복
 ist15 <- ist15 %>% mutate(T15_lag1 = lag(Time_15, 1)) %>%
   mutate(NT15_1 = if_else(T15 == TRUE, print(T15_lag1), print(Time_15))) %>%
   mutate(check_NT15_1 = if_else(NT15_1 == 0, TRUE, FALSE)) %>% 
@@ -970,8 +954,6 @@ sst15 <- sst15 %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, NT15_9)
 ist16 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_16, T16) %>% filter(Inflow_Spill == '유입') %>% arrange(Point_No, Day)
 sst16 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_16, T16) %>% filter(Inflow_Spill == '유출') %>% arrange(Point_No, Day)
 
-
-# 해당 컬럼의 값이 0인지 T/F로 체크 -> n칸 끌어내려서 데이터값 입력 -> 이후 한칸 끌어내린 데이터의 값이 0이면 한칸 끌어내린 값을 입력, 그렇지 않으면 기존 값을 입력 -> 이후 다시 0값이 완전히 없어질때까지 반복
 ist16 <- ist16 %>% mutate(T16_lag1 = lag(Time_16, 1)) %>%
   mutate(NT16_1 = if_else(T16 == TRUE, print(T16_lag1), print(Time_16))) %>%
   mutate(check_NT16_1 = if_else(NT16_1 == 0, TRUE, FALSE)) %>% 
@@ -1033,8 +1015,6 @@ sst16 <- sst16 %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, NT16_8)
 ist17 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_17, T17) %>% filter(Inflow_Spill == '유입') %>% arrange(Point_No, Day)
 sst17 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_17, T17) %>% filter(Inflow_Spill == '유출') %>% arrange(Point_No, Day)
 
-
-# 해당 컬럼의 값이 0인지 T/F로 체크 -> n칸 끌어내려서 데이터값 입력 -> 이후 한칸 끌어내린 데이터의 값이 0이면 한칸 끌어내린 값을 입력, 그렇지 않으면 기존 값을 입력 -> 이후 다시 0값이 완전히 없어질때까지 반복
 ist17 <- ist17 %>% mutate(T17_lag1 = lag(Time_17, 1)) %>%
   mutate(NT17_1 = if_else(T17 == TRUE, print(T17_lag1), print(Time_17))) %>%
   mutate(check_NT17_1 = if_else(NT17_1 == 0, TRUE, FALSE)) %>% 
@@ -1096,8 +1076,6 @@ sst17 <- sst17 %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, NT17_8)
 ist18 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_18, T18) %>% filter(Inflow_Spill == '유입') %>% arrange(Point_No, Day)
 sst18 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_18, T18) %>% filter(Inflow_Spill == '유출') %>% arrange(Point_No, Day)
 
-
-# 해당 컬럼의 값이 0인지 T/F로 체크 -> n칸 끌어내려서 데이터값 입력 -> 이후 한칸 끌어내린 데이터의 값이 0이면 한칸 끌어내린 값을 입력, 그렇지 않으면 기존 값을 입력 -> 이후 다시 0값이 완전히 없어질때까지 반복
 ist18 <- ist18 %>% mutate(T18_lag1 = lag(Time_18, 1)) %>%
   mutate(NT18_1 = if_else(T18 == TRUE, print(T18_lag1), print(Time_18))) %>%
   mutate(check_NT18_1 = if_else(NT18_1 == 0, TRUE, FALSE)) %>% 
@@ -1157,8 +1135,6 @@ sst18 <- sst18 %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, NT18_7)
 ist19 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_19, T19) %>% filter(Inflow_Spill == '유입') %>% arrange(Point_No, Day)
 sst19 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_19, T19) %>% filter(Inflow_Spill == '유출') %>% arrange(Point_No, Day)
 
-
-# 해당 컬럼의 값이 0인지 T/F로 체크 -> n칸 끌어내려서 데이터값 입력 -> 이후 한칸 끌어내린 데이터의 값이 0이면 한칸 끌어내린 값을 입력, 그렇지 않으면 기존 값을 입력 -> 이후 다시 0값이 완전히 없어질때까지 반복
 ist19 <- ist19 %>% mutate(T19_lag1 = lag(Time_19, 1)) %>%
   mutate(NT19_1 = if_else(T19 == TRUE, print(T19_lag1), print(Time_19))) %>%
   mutate(check_NT19_1 = if_else(NT19_1 == 0, TRUE, FALSE)) %>% 
@@ -1214,8 +1190,6 @@ sst19 <- sst19 %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, NT19_6)
 ist20 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_20, T20) %>% filter(Inflow_Spill == '유입') %>% arrange(Point_No, Day)
 sst20 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_20, T20) %>% filter(Inflow_Spill == '유출') %>% arrange(Point_No, Day)
 
-
-# 해당 컬럼의 값이 0인지 T/F로 체크 -> n칸 끌어내려서 데이터값 입력 -> 이후 한칸 끌어내린 데이터의 값이 0이면 한칸 끌어내린 값을 입력, 그렇지 않으면 기존 값을 입력 -> 이후 다시 0값이 완전히 없어질때까지 반복
 ist20 <- ist20 %>% mutate(T20_lag1 = lag(Time_20, 1)) %>%
   mutate(NT20_1 = if_else(T20 == TRUE, print(T20_lag1), print(Time_20))) %>%
   mutate(check_NT20_1 = if_else(NT20_1 == 0, TRUE, FALSE)) %>% 
@@ -1265,8 +1239,6 @@ sst20 <- sst20 %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, NT20_6)
 ist21 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_21, T21) %>% filter(Inflow_Spill == '유입') %>% arrange(Point_No, Day)
 sst21 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_21, T21) %>% filter(Inflow_Spill == '유출') %>% arrange(Point_No, Day)
 
-
-# 해당 컬럼의 값이 0인지 T/F로 체크 -> n칸 끌어내려서 데이터값 입력 -> 이후 한칸 끌어내린 데이터의 값이 0이면 한칸 끌어내린 값을 입력, 그렇지 않으면 기존 값을 입력 -> 이후 다시 0값이 완전히 없어질때까지 반복
 ist21 <- ist21 %>% mutate(T21_lag1 = lag(Time_21, 1)) %>%
   mutate(NT21_1 = if_else(T21 == TRUE, print(T21_lag1), print(Time_21))) %>%
   mutate(check_NT21_1 = if_else(NT21_1 == 0, TRUE, FALSE)) %>% 
@@ -1319,8 +1291,6 @@ sst21 <- sst21 %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, NT21_6)
 ist22 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_22, T22) %>% filter(Inflow_Spill == '유입') %>% arrange(Point_No, Day)
 sst22 <- Seoul_traffic %>% select(DATE, Day, Point_Name, Point_No, Inflow_Spill, Time_22, T22) %>% filter(Inflow_Spill == '유출') %>% arrange(Point_No, Day)
 
-
-# 해당 컬럼의 값이 0인지 T/F로 체크 -> n칸 끌어내려서 데이터값 입력 -> 이후 한칸 끌어내린 데이터의 값이 0이면 한칸 끌어내린 값을 입력, 그렇지 않으면 기존 값을 입력 -> 이후 다시 0값이 완전히 없어질때까지 반복
 ist22 <- ist22 %>% mutate(T22_lag1 = lag(Time_22, 1)) %>%
   mutate(NT22_1 = if_else(T22 == TRUE, print(T22_lag1), print(Time_22))) %>%
   mutate(check_NT22_1 = if_else(NT22_1 == 0, TRUE, FALSE)) %>% 
@@ -1426,7 +1396,7 @@ Seoul_traffic <- Seoul_traffic %>% mutate(Quarter = case_when(Month == '01' ~ 'Q
                                                               Month == '11' ~ 'Q4',
                                                               Month == '12' ~ 'Q4'))
 
-# 필요없는 컬럼은 제거 후 컬럼 순서 변경
+# 필요없는 컬럼은 제거 후 컬럼 순서 변경 후 각 지점별 통행량통합과 각 지점별 유입출 건수를 이용해서 증감율 구하기
 Seoul_traffic <- Seoul_traffic %>% select(-T6, -T7, -T8, -T9, -T10, -T11, -T12, -T13, -T14, -T15, -T16, -T17, -T18, -T19, -T20, -T21, -T22, -DATE, -Chrdate, -Month)
 
 Seoul_traffic <- Seoul_traffic %>% mutate(Year = str_extract(New_Date, '[0-9]{1,4}'))
@@ -1451,7 +1421,7 @@ qnp <- qnp %>% group_by() %>% mutate(seq = row_number())
 
 qwe <- qnp %>% mutate(Point_check = str_extract(Point_No, '[A-Z]{1,1}'))
 
-# num에 B, C, D, F 지점별로 입력해서 각 지점별 특정 시기의 유입/유출 증감율 확인
+#각 지점값을 num이라는 변수에 입력해서 특정 기간별 증감율 확인(num에 B, C, D, F 중 입력)
 num <- 'F'
 qwe %>% filter(Year <= 2018 & Point_check == num  & Inflow_Spill == '유입') %>% group_by(Point_No) %>% mutate(ratio = allsum/alln) %>%
   mutate(lag_ratio = lag(ratio, 2)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% 
@@ -1477,304 +1447,38 @@ qwe %>% filter(Point_check == num  & Inflow_Spill == '유출') %>% group_by(Poin
   mutate(lag_ratio = lag(ratio, 3)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% 
   spread(key=Year, value=per_val)
 
-
-#ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ유입ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-I_PN_B1 <- qnp %>% filter(Point_No == 'B-01' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B2 <- qnp %>% filter(Point_No == 'B-02' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B3 <- qnp %>% filter(Point_No == 'B-03' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B4 <- qnp %>% filter(Point_No == 'B-04' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B5 <- qnp %>% filter(Point_No == 'B-05' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B6 <- qnp %>% filter(Point_No == 'B-06' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B7 <- qnp %>% filter(Point_No == 'B-07' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B8 <- qnp %>% filter(Point_No == 'B-08' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B9 <- qnp %>% filter(Point_No == 'B-09' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B10 <- qnp %>% filter(Point_No == 'B-10' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B11 <- qnp %>% filter(Point_No == 'B-11' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B12 <- qnp %>% filter(Point_No == 'B-12' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B13 <- qnp %>% filter(Point_No == 'B-13' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B14 <- qnp %>% filter(Point_No == 'B-14' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B15 <- qnp %>% filter(Point_No == 'B-15' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B16 <- qnp %>% filter(Point_No == 'B-16' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B17 <- qnp %>% filter(Point_No == 'B-17' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B18 <- qnp %>% filter(Point_No == 'B-18' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B19 <- qnp %>% filter(Point_No == 'B-19' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B20 <- qnp %>% filter(Point_No == 'B-20' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B21 <- qnp %>% filter(Point_No == 'B-21' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B22 <- qnp %>% filter(Point_No == 'B-22' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B23 <- qnp %>% filter(Point_No == 'B-23' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B24 <- qnp %>% filter(Point_No == 'B-24' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B25 <- qnp %>% filter(Point_No == 'B-25' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B26 <- qnp %>% filter(Point_No == 'B-26' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B27 <- qnp %>% filter(Point_No == 'B-27' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B28 <- qnp %>% filter(Point_No == 'B-28' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B29 <- qnp %>% filter(Point_No == 'B-29' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B30 <- qnp %>% filter(Point_No == 'B-30' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B31 <- qnp %>% filter(Point_No == 'B-31' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B32 <- qnp %>% filter(Point_No == 'B-32' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B33 <- qnp %>% filter(Point_No == 'B-33' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B34 <- qnp %>% filter(Point_No == 'B-34' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B35 <- qnp %>% filter(Point_No == 'B-35' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B36 <- qnp %>% filter(Point_No == 'B-36' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_B37 <- qnp %>% filter(Point_No == 'B-37' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_C1 <- qnp %>% filter(Point_No == 'C-01' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_C2 <- qnp %>% filter(Point_No == 'C-02' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_C3 <- qnp %>% filter(Point_No == 'C-03' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_C4 <- qnp %>% filter(Point_No == 'C-04' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_C5 <- qnp %>% filter(Point_No == 'C-05' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_C6 <- qnp %>% filter(Point_No == 'C-06' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_C7 <- qnp %>% filter(Point_No == 'C-07' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_C8 <- qnp %>% filter(Point_No == 'C-08' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_C9 <- qnp %>% filter(Point_No == 'C-09' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_C10 <- qnp %>% filter(Point_No == 'C-10' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_C11 <- qnp %>% filter(Point_No == 'C-11' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_C12 <- qnp %>% filter(Point_No == 'C-12' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_C13 <- qnp %>% filter(Point_No == 'C-13' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_C14 <- qnp %>% filter(Point_No == 'C-14' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_C15 <- qnp %>% filter(Point_No == 'C-15' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_C16 <- qnp %>% filter(Point_No == 'C-16' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_C17 <- qnp %>% filter(Point_No == 'C-17' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_C18 <- qnp %>% filter(Point_No == 'C-18' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_C19 <- qnp %>% filter(Point_No == 'C-19' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_C20 <- qnp %>% filter(Point_No == 'C-20' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_C21 <- qnp %>% filter(Point_No == 'C-21' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_C22 <- qnp %>% filter(Point_No == 'C-22' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D1 <- qnp %>% filter(Point_No == 'D-01' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D2 <- qnp %>% filter(Point_No == 'D-02' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D3 <- qnp %>% filter(Point_No == 'D-03' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D4 <- qnp %>% filter(Point_No == 'D-04' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D5 <- qnp %>% filter(Point_No == 'D-05' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D6 <- qnp %>% filter(Point_No == 'D-06' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D7 <- qnp %>% filter(Point_No == 'D-07' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D8 <- qnp %>% filter(Point_No == 'D-08' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D9 <- qnp %>% filter(Point_No == 'D-09' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D10 <- qnp %>% filter(Point_No == 'D-10' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D11 <- qnp %>% filter(Point_No == 'D-11' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D12 <- qnp %>% filter(Point_No == 'D-12' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D13 <- qnp %>% filter(Point_No == 'D-13' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D14 <- qnp %>% filter(Point_No == 'D-14' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D15 <- qnp %>% filter(Point_No == 'D-15' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D16 <- qnp %>% filter(Point_No == 'D-16' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D17 <- qnp %>% filter(Point_No == 'D-17' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D18 <- qnp %>% filter(Point_No == 'D-18' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D19 <- qnp %>% filter(Point_No == 'D-19' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D20 <- qnp %>% filter(Point_No == 'D-20' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D21 <- qnp %>% filter(Point_No == 'D-21' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D22 <- qnp %>% filter(Point_No == 'D-22' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D23 <- qnp %>% filter(Point_No == 'D-23' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D24 <- qnp %>% filter(Point_No == 'D-24' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D25 <- qnp %>% filter(Point_No == 'D-25' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D26 <- qnp %>% filter(Point_No == 'D-26' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D27 <- qnp %>% filter(Point_No == 'D-27' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D28 <- qnp %>% filter(Point_No == 'D-28' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D29 <- qnp %>% filter(Point_No == 'D-29' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D30 <- qnp %>% filter(Point_No == 'D-30' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D31 <- qnp %>% filter(Point_No == 'D-31' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D32 <- qnp %>% filter(Point_No == 'D-32' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D33 <- qnp %>% filter(Point_No == 'D-33' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D34 <- qnp %>% filter(Point_No == 'D-34' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D35 <- qnp %>% filter(Point_No == 'D-35' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D36 <- qnp %>% filter(Point_No == 'D-36' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D37 <- qnp %>% filter(Point_No == 'D-37' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D38 <- qnp %>% filter(Point_No == 'D-38' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D39 <- qnp %>% filter(Point_No == 'D-39' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D40 <- qnp %>% filter(Point_No == 'D-40' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D41 <- qnp %>% filter(Point_No == 'D-41' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D42 <- qnp %>% filter(Point_No == 'D-42' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D43 <- qnp %>% filter(Point_No == 'D-43' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D44 <- qnp %>% filter(Point_No == 'D-44' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D45 <- qnp %>% filter(Point_No == 'D-45' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D46 <- qnp %>% filter(Point_No == 'D-46' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D47 <- qnp %>% filter(Point_No == 'D-47' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D48 <- qnp %>% filter(Point_No == 'D-48' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D49 <- qnp %>% filter(Point_No == 'D-49' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D50 <- qnp %>% filter(Point_No == 'D-50' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D51 <- qnp %>% filter(Point_No == 'D-51' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D52 <- qnp %>% filter(Point_No == 'D-52' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D53 <- qnp %>% filter(Point_No == 'D-53' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_D54 <- qnp %>% filter(Point_No == 'D-54' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_F1 <- qnp %>% filter(Point_No == 'F-01' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_F2 <- qnp %>% filter(Point_No == 'F-02' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_F3 <- qnp %>% filter(Point_No == 'F-03' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_F4 <- qnp %>% filter(Point_No == 'F-04' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_F5 <- qnp %>% filter(Point_No == 'F-05' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_F6 <- qnp %>% filter(Point_No == 'F-06' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_F7 <- qnp %>% filter(Point_No == 'F-07' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_F8 <- qnp %>% filter(Point_No == 'F-08' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-I_PN_F9 <- qnp %>% filter(Point_No == 'F-09' & Inflow_Spill == '유입') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-
-I_PN_B <- rbind(I_PN_B1, I_PN_B2, I_PN_B3, I_PN_B4, I_PN_B5, I_PN_B6, I_PN_B7, I_PN_B8, I_PN_B9, I_PN_B10, I_PN_B11, I_PN_B14, I_PN_B15, I_PN_B17, I_PN_B18, I_PN_B19, I_PN_B20, I_PN_B21, I_PN_B22, I_PN_B23, I_PN_B25, I_PN_B26, I_PN_B27, I_PN_B28, I_PN_B29, I_PN_B31, I_PN_B32, I_PN_B33, I_PN_B34, I_PN_B35, I_PN_B36)
-# B지점 컬럼이 일부 없는 번호 (12, 13, 16, 24, 30, 37)
-
-I_PN_C <- rbind(I_PN_C1, I_PN_C3, I_PN_C4, I_PN_C5, I_PN_C6, I_PN_C7, I_PN_C8, I_PN_C9, I_PN_C10, I_PN_C11, I_PN_C12, I_PN_C13, I_PN_C14, I_PN_C15, I_PN_C16, I_PN_C17, I_PN_C18, I_PN_C19, I_PN_C20, I_PN_C21)
-# C지점 컬럼이 일부 없는 번호(2, 22)
-
-I_PN_D <- rbind(I_PN_D1, I_PN_D2, I_PN_D3, I_PN_D4, I_PN_D5, I_PN_D6, I_PN_D7, I_PN_D8, I_PN_D9, I_PN_D10, I_PN_D11, I_PN_D12, I_PN_D14, I_PN_D15, I_PN_D16, I_PN_D17, I_PN_D18, I_PN_D19, I_PN_D20, I_PN_D22, I_PN_D23, I_PN_D25, I_PN_D27, I_PN_D28, I_PN_D29, I_PN_D30, I_PN_D31, I_PN_D32, I_PN_D33, I_PN_D34, I_PN_D35, I_PN_D36, I_PN_D37, I_PN_D38, I_PN_D39, I_PN_D40, I_PN_D41, I_PN_D42, I_PN_D43, I_PN_D44, I_PN_D45)
-# D지점 컬럼이 일부 없는 번호(13, 21, 24, 26, 46, 47, 48, 49, 50, 51, 52, 53, 54)
-
-I_PN_F <- rbind(I_PN_F1, I_PN_F2, I_PN_F3, I_PN_F4, I_PN_F5, I_PN_F6, I_PN_F7, I_PN_F8, I_PN_F9)
-
-# write.csv(I_PN_D54, 'c:/Big Data Contest/I_PN/I_PN_D54.csv')
-
-#ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ유출ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-S_PN_B1 <- qnp %>% filter(Point_No == 'B-01'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B2 <- qnp %>% filter(Point_No == 'B-02'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B3 <- qnp %>% filter(Point_No == 'B-03'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B4 <- qnp %>% filter(Point_No == 'B-04'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B5 <- qnp %>% filter(Point_No == 'B-05'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B6 <- qnp %>% filter(Point_No == 'B-06'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B7 <- qnp %>% filter(Point_No == 'B-07'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B8 <- qnp %>% filter(Point_No == 'B-08'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B9 <- qnp %>% filter(Point_No == 'B-09'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B10 <- qnp %>% filter(Point_No == 'B-10'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B11 <- qnp %>% filter(Point_No == 'B-11'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B12 <- qnp %>% filter(Point_No == 'B-12'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B13 <- qnp %>% filter(Point_No == 'B-13'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B14 <- qnp %>% filter(Point_No == 'B-14'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B15 <- qnp %>% filter(Point_No == 'B-15'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B16 <- qnp %>% filter(Point_No == 'B-16'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B17 <- qnp %>% filter(Point_No == 'B-17'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B18 <- qnp %>% filter(Point_No == 'B-18'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B19 <- qnp %>% filter(Point_No == 'B-19'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B20 <- qnp %>% filter(Point_No == 'B-20'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B21 <- qnp %>% filter(Point_No == 'B-21'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B22 <- qnp %>% filter(Point_No == 'B-22'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B23 <- qnp %>% filter(Point_No == 'B-23'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B24 <- qnp %>% filter(Point_No == 'B-24'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B25 <- qnp %>% filter(Point_No == 'B-25'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B26 <- qnp %>% filter(Point_No == 'B-26'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B27 <- qnp %>% filter(Point_No == 'B-27'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B28 <- qnp %>% filter(Point_No == 'B-28'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B29 <- qnp %>% filter(Point_No == 'B-29'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B30 <- qnp %>% filter(Point_No == 'B-30'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B31 <- qnp %>% filter(Point_No == 'B-31'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B32 <- qnp %>% filter(Point_No == 'B-32'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B33 <- qnp %>% filter(Point_No == 'B-33'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B34 <- qnp %>% filter(Point_No == 'B-34'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B35 <- qnp %>% filter(Point_No == 'B-35'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B36 <- qnp %>% filter(Point_No == 'B-36'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_B37 <- qnp %>% filter(Point_No == 'B-37'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_C1 <- qnp %>% filter(Point_No == 'C-01'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_C2 <- qnp %>% filter(Point_No == 'C-02'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_C3 <- qnp %>% filter(Point_No == 'C-03'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_C4 <- qnp %>% filter(Point_No == 'C-04'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_C5 <- qnp %>% filter(Point_No == 'C-05'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_C6 <- qnp %>% filter(Point_No == 'C-06'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_C7 <- qnp %>% filter(Point_No == 'C-07'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_C8 <- qnp %>% filter(Point_No == 'C-08'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_C9 <- qnp %>% filter(Point_No == 'C-09'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_C10 <- qnp %>% filter(Point_No == 'C-10'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_C11 <- qnp %>% filter(Point_No == 'C-11'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_C12 <- qnp %>% filter(Point_No == 'C-12'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_C13 <- qnp %>% filter(Point_No == 'C-13'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_C14 <- qnp %>% filter(Point_No == 'C-14'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_C15 <- qnp %>% filter(Point_No == 'C-15'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_C16 <- qnp %>% filter(Point_No == 'C-16'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_C17 <- qnp %>% filter(Point_No == 'C-17'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_C18 <- qnp %>% filter(Point_No == 'C-18'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_C19 <- qnp %>% filter(Point_No == 'C-19'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_C20 <- qnp %>% filter(Point_No == 'C-20'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_C21 <- qnp %>% filter(Point_No == 'C-21'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_C22 <- qnp %>% filter(Point_No == 'C-22'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D1 <- qnp %>% filter(Point_No == 'D-01'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D2 <- qnp %>% filter(Point_No == 'D-02'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D3 <- qnp %>% filter(Point_No == 'D-03'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D4 <- qnp %>% filter(Point_No == 'D-04'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D5 <- qnp %>% filter(Point_No == 'D-05'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D6 <- qnp %>% filter(Point_No == 'D-06'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D7 <- qnp %>% filter(Point_No == 'D-07'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D8 <- qnp %>% filter(Point_No == 'D-08'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D9 <- qnp %>% filter(Point_No == 'D-09'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D10 <- qnp %>% filter(Point_No == 'D-10'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D11 <- qnp %>% filter(Point_No == 'D-11'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D12 <- qnp %>% filter(Point_No == 'D-12'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D13 <- qnp %>% filter(Point_No == 'D-13'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D14 <- qnp %>% filter(Point_No == 'D-14'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D15 <- qnp %>% filter(Point_No == 'D-15'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D16 <- qnp %>% filter(Point_No == 'D-16'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D17 <- qnp %>% filter(Point_No == 'D-17'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D18 <- qnp %>% filter(Point_No == 'D-18'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D19 <- qnp %>% filter(Point_No == 'D-19'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D20 <- qnp %>% filter(Point_No == 'D-20'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D21 <- qnp %>% filter(Point_No == 'D-21'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D22 <- qnp %>% filter(Point_No == 'D-22'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D23 <- qnp %>% filter(Point_No == 'D-23'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D24 <- qnp %>% filter(Point_No == 'D-24'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D25 <- qnp %>% filter(Point_No == 'D-25'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D26 <- qnp %>% filter(Point_No == 'D-26'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D27 <- qnp %>% filter(Point_No == 'D-27'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D28 <- qnp %>% filter(Point_No == 'D-28'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D29 <- qnp %>% filter(Point_No == 'D-29'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D30 <- qnp %>% filter(Point_No == 'D-30'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D31 <- qnp %>% filter(Point_No == 'D-31'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D32 <- qnp %>% filter(Point_No == 'D-32'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D33 <- qnp %>% filter(Point_No == 'D-33'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D34 <- qnp %>% filter(Point_No == 'D-34'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D35 <- qnp %>% filter(Point_No == 'D-35'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D36 <- qnp %>% filter(Point_No == 'D-36'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D37 <- qnp %>% filter(Point_No == 'D-37'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D38 <- qnp %>% filter(Point_No == 'D-38'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D39 <- qnp %>% filter(Point_No == 'D-39'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D40 <- qnp %>% filter(Point_No == 'D-40'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D41 <- qnp %>% filter(Point_No == 'D-41'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D42 <- qnp %>% filter(Point_No == 'D-42'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D43 <- qnp %>% filter(Point_No == 'D-43'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D44 <- qnp %>% filter(Point_No == 'D-44'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D45 <- qnp %>% filter(Point_No == 'D-45'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D46 <- qnp %>% filter(Point_No == 'D-46'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D47 <- qnp %>% filter(Point_No == 'D-47'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D48 <- qnp %>% filter(Point_No == 'D-48'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D49 <- qnp %>% filter(Point_No == 'D-49'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D50 <- qnp %>% filter(Point_No == 'D-50'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D51 <- qnp %>% filter(Point_No == 'D-51'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D52 <- qnp %>% filter(Point_No == 'D-52'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D53 <- qnp %>% filter(Point_No == 'D-53'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_D54 <- qnp %>% filter(Point_No == 'D-54'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_F1 <- qnp %>% filter(Point_No == 'F-01'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_F2 <- qnp %>% filter(Point_No == 'F-02'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_F3 <- qnp %>% filter(Point_No == 'F-03'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_F4 <- qnp %>% filter(Point_No == 'F-04'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_F5 <- qnp %>% filter(Point_No == 'F-05'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_F6 <- qnp %>% filter(Point_No == 'F-06'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_F7 <- qnp %>% filter(Point_No == 'F-07'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_F8 <- qnp %>% filter(Point_No == 'F-08'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-S_PN_F9 <- qnp %>% filter(Point_No == 'F-09'& Inflow_Spill == '유출') %>% mutate(ratio = allsum/alln) %>% mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% spread(key=Year, value=per_val)
-
-S_PN_B <- rbind(S_PN_B1, S_PN_B2, S_PN_B3, S_PN_B4, S_PN_B5, S_PN_B6, S_PN_B7, S_PN_B8, S_PN_B9, S_PN_B10, S_PN_B11, S_PN_B14, S_PN_B15, S_PN_B17, S_PN_B19, S_PN_B20, S_PN_B21, S_PN_B22, S_PN_B23, S_PN_B25, S_PN_B26, S_PN_B27, S_PN_B28, S_PN_B29, S_PN_B31, S_PN_B32, S_PN_B33, S_PN_B34, S_PN_B35, S_PN_B36)
-# B지점 컬럼이 일부 없는 번호( 12, 13, 16, 18, 24, 30, 37)
-
-S_PN_C <- rbind(S_PN_C1, S_PN_C3, S_PN_C4, S_PN_C5, S_PN_C6, S_PN_C7, S_PN_C8, S_PN_C9, S_PN_C10, S_PN_C11, S_PN_C12, S_PN_C13, S_PN_C14, S_PN_C15, S_PN_C16, S_PN_C17, S_PN_C18, S_PN_C19, S_PN_C20, S_PN_C21)
-# C지점 컬럼이 일부 없는 번호( 2, 22)
-
-S_PN_D <- rbind(S_PN_D1, S_PN_D2, S_PN_D3, S_PN_D4, S_PN_D6, S_PN_D7, S_PN_D8, S_PN_D9, S_PN_D10, S_PN_D11, S_PN_D12, S_PN_D13, S_PN_D15, S_PN_D16, S_PN_D17, S_PN_D18, S_PN_D19, S_PN_D20, S_PN_D22, S_PN_D25, S_PN_D29, S_PN_D30, S_PN_D31, S_PN_D32, S_PN_D33, S_PN_D34, S_PN_D35, S_PN_D36, S_PN_D37, S_PN_D38, S_PN_D39, S_PN_D40, S_PN_D41, S_PN_D42, S_PN_D43)
-# D지점 컬럼이 일부 없는 번호 (5, 14, 21, 23, 24, 26, 27, 28, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54)
-
-S_PN_F <- rbind(S_PN_F1, S_PN_F2, S_PN_F3, S_PN_F4, S_PN_F5, S_PN_F6, S_PN_F7, S_PN_F8, S_PN_F9)
-
-
-#이후 컬럼이 없는 지점별 코드들도 엑셀 작업을 통해 하나의 PN_지점명 알파벳_final이라는 데이터로 통합
-# 통합저장된 데이터를 불러온 후 na값을 0으로 변환 후 시각화 처리해서 파일 저장
-ipnb <- read.csv('c:/Big Data Contest/I_PN/I_PN_B_final.csv')
+# num에 B, C, D, F 지점별로 입력해서 각 지점별 특정 시기의 유입/유출 증감율 확인
+ipnb <- qwe %>% filter(Point_check == 'B'  & Inflow_Spill == '유입') %>% group_by(Point_No) %>% mutate(ratio = allsum/alln) %>%
+  mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% 
+  spread(key=Year, value=per_val)
+spnb <- qwe %>% filter(Point_check == 'B'  & Inflow_Spill == '유출') %>% group_by(Point_No) %>% mutate(ratio = allsum/alln) %>%
+  mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% 
+  spread(key=Year, value=per_val)
+ipnc <- qwe %>% filter(Point_check == 'C'  & Inflow_Spill == '유입') %>% group_by(Point_No) %>% mutate(ratio = allsum/alln) %>%
+  mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% 
+  spread(key=Year, value=per_val)
+spnc <- qwe %>% filter(Point_check == 'C'  & Inflow_Spill == '유출') %>% group_by(Point_No) %>% mutate(ratio = allsum/alln) %>%
+  mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% 
+  spread(key=Year, value=per_val)
+ipnd <- qwe %>% filter(Point_check == 'D'  & Inflow_Spill == '유입') %>% group_by(Point_No) %>% mutate(ratio = allsum/alln) %>%
+  mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% 
+  spread(key=Year, value=per_val)
+spnd <- qwe %>% filter(Point_check == 'D'  & Inflow_Spill == '유출') %>% group_by(Point_No) %>% mutate(ratio = allsum/alln) %>%
+  mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% 
+  spread(key=Year, value=per_val)
+ipnf <- qwe %>% filter(Point_check == 'F'  & Inflow_Spill == '유입') %>% group_by(Point_No) %>% mutate(ratio = allsum/alln) %>%
+  mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% 
+  spread(key=Year, value=per_val)
+spnf <- qwe %>% filter(Point_check == 'F'  & Inflow_Spill == '유출') %>% group_by(Point_No) %>% mutate(ratio = allsum/alln) %>%
+  mutate(lag_ratio = lag(ratio, 1)) %>% mutate(per_val = (ratio - lag_ratio) / ( lag_ratio/100)) %>% select(Point_No, Year, per_val) %>% 
+  spread(key=Year, value=per_val)
 ipnb[is.na(ipnb)] <- 0
-
-ipnc <- read.csv('c:/Big Data Contest/I_PN/I_PN_C_final.csv')
 ipnc[is.na(ipnc)] <- 0
-
-ipnd <- read.csv('c:/Big Data Contest/I_PN/I_PN_D_final.csv')
 ipnd[is.na(ipnd)] <- 0
-
-ipnf <- read.csv('c:/Big Data Contest/I_PN/I_PN_F.csv')
 ipnf[is.na(ipnf)] <- 0
-
-spnb <- read.csv('c:/Big Data Contest/S_PN/S_PN_B_final.csv')
 spnb[is.na(spnb)] <- 0
-
-spnc <- read.csv('c:/Big Data Contest/S_PN/S_PN_C_final.csv')
 spnc[is.na(spnc)] <- 0
-
-spnd <- read.csv('c:/Big Data Contest/S_PN/S_PN_D_final.csv')
 spnd[is.na(spnd)] <- 0
-
-spnf <- read.csv('c:/Big Data Contest/S_PN/S_PN_F.csv')
 spnf[is.na(spnf)] <- 0
 
 ipn <- rbind(ipnb, ipnc, ipnd, ipnf)
@@ -1785,6 +1489,7 @@ spn <- spn %>% mutate(Inflow_spill = if_else(Point_No != 0, '유출', '오류'))
 
 pn <- rbind(ipn, spn)
 
+# 지점-년도별 그래프 시각화하기
 pn_temp <- gather(pn, key='year', value = 'value', -Point_No, -Inflow_spill, -Point_check)
 
 para_list <- unique(pn_temp$year)
@@ -1800,7 +1505,7 @@ for (i in 2:length(para_list)){
     v_pn <- pn_list[k]
     pn_temp %>% filter(year == v_para & Inflow_spill == '유입' & Point_check ==  v_pn) %>% ggplot(aes(x = value, y = Point_No, color = Point_No)) +
       geom_col() + ggtitle(v_para) +
-      ggsave(file = paste0("C:/Big Data Contest/I_PN_for/ipn_", v_pn, v_para, ".jpg"))
+      ggsave(file = paste0("C:/Big Data Contest/지점년도별 증감율그래프/ipn_", v_pn, v_para, ".jpg"))
   }
 }
 
@@ -1811,6 +1516,6 @@ for (i in 2:length(para_list)){
     v_pn <- pn_list[k]
     pn_temp %>% filter(year == v_para & Inflow_spill == '유출' & Point_check ==  v_pn) %>% ggplot(aes(x = value, y = Point_No, color = Point_No)) +
       geom_col() + ggtitle(v_para) +
-      ggsave(file = paste0("C:/Big Data Contest/S_PN_for/spn_", v_pn, v_para, ".jpg"))
+      ggsave(file = paste0("C:/Big Data Contest/지점년도별 증감율그래프/spn_", v_pn, v_para, ".jpg"))
   }
 }
