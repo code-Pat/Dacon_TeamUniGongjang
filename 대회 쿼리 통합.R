@@ -1503,8 +1503,8 @@ for (i in 2:length(para_list)){
   v_para <- para_list[i]
   for (k in 1:length(pn_list)){
     v_pn <- pn_list[k]
-    pn_temp %>% filter(year == v_para & Inflow_spill == '유입' & Point_check ==  v_pn) %>% ggplot(aes(x = value, y = Point_No, color = Point_No)) +
-      geom_col() + ggtitle(v_para) +
+    pn_temp %>% filter(year == v_para & Inflow_spill == '유입' & Point_check ==  v_pn) %>% ggplot(aes(x = value, y = Point_No)) +
+      geom_col() + ggtitle(paste0(v_para, '년 ', v_pn, '지점 유입증감율')) +
       ggsave(file = paste0("C:/Big Data Contest/지점년도별 증감율그래프/ipn_", v_pn, v_para, ".jpg"))
   }
 }
@@ -1514,8 +1514,8 @@ for (i in 2:length(para_list)){
   v_para <- para_list[i]
   for (k in 1:length(pn_list)){
     v_pn <- pn_list[k]
-    pn_temp %>% filter(year == v_para & Inflow_spill == '유출' & Point_check ==  v_pn) %>% ggplot(aes(x = value, y = Point_No, color = Point_No)) +
-      geom_col() + ggtitle(v_para) +
+    pn_temp %>% filter(year == v_para & Inflow_spill == '유출' & Point_check ==  v_pn) %>% ggplot(aes(x = value, y = Point_No)) +
+      geom_col() + ggtitle(paste0(v_para, '년 ', v_pn, '지점 유출증감율')) +
       ggsave(file = paste0("C:/Big Data Contest/지점년도별 증감율그래프/spn_", v_pn, v_para, ".jpg"))
   }
 }
