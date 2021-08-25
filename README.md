@@ -1,1 +1,3 @@
-# Dacon_TeamUniGongjang
+# Dacon 대회 준비하면서 작성한 코드들 
+* 코드 무작위 업로드 -> 실제 사용된 코드 && junk 코드도 있음!
+* 그냥 pace유지하기 위한 공간
